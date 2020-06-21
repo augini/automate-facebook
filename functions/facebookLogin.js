@@ -1,10 +1,11 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
-const config = require('./config.json');
-const cookies = require('./cookies.json');
+const config = require('../config/config.json');
+const cookies = require('../config/cookies.json');
 
 
-(async () => {
+//Function to login to Facebook
+const loginFacebook =  async () => {
 
   //Start the puppeteer and browser
   let browser = await puppeteer.launch({ headless: false })
@@ -13,10 +14,13 @@ const cookies = require('./cookies.json');
   if (Object.keys(cookies).length) {
 
     //Set the saved cookies in the saved puppeteer browser page
-    await page.setCookies(...cookies)
+    await page.setCookie(...cookies)
 
     //Go to facebook
     await page.goto('https://www.facebook.com', { waitUntil: 'networkidle2' })
+
+    //Return the page
+    return page
 
   } else {
 
@@ -32,7 +36,7 @@ const cookies = require('./cookies.json');
 
     //Wait for navigation to finish
     await page.waitForNavigation({ waitUntil: 'networkidle0' })
-    await page.waitFor(5000)
+    await page.waitFor(10000)
 
     //Check if logged in
     try {
@@ -42,36 +46,16 @@ const cookies = require('./cookies.json');
       process.exit(0)
     }
 
-    //Go to the profile page
-    await page.click('[data-click = "profile_icon"]')
-
-    try {
-       //Wait for the post form
-       await page.waitFor('._1mf._1mj')
-    } catch (error) {
-      console.log("Failed to type")
-      process.exit(0)
-    }
-
-    //Type the post information
-    await page.click('._1mf._1mj')
-    await page.type("._1mf._1mj", "This is the third autofdfmated post", {delay: 10})
-    console.log("typing the post information");
-
-    //Click the submit form
-    await page.waitFor(1000)
-    await page.click('div[aria-label="Create a post"] button[type=submit]');
-
-    //if we close too soon, it might not finish the post sucessfully
-    await new Promise(res => setTimeout(res, 2000));
-    
     //Get the present cookies information
-    let currentCookies = await page.cookies()
+    let currentCookies = await page.cookies('https://www.facebook.com/login')
 
     //Save the cookies in a seperate file
     fs.writeFileSync('./cookies.json', JSON.stringify(currentCookies))
 
+    //Return the page
+    return page
   }
-  debugger
-  await browser.close();
-})();
+}
+
+
+module.exports = loginFacebook
