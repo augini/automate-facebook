@@ -1,33 +1,54 @@
+const cheerio = require('cheerio')
 
 const makeBirthdayWishes = async (page) => {
 
   await page.reload()
 
-  //Click the notifications icon
-  await page.click('div[.uiToggle] a[.jewelButton]');
+  await page.goto('https://www.facebook.com/notifications', { waitUntil: 'networkidle2' })
 
+  //Grab the notifications HTML
+  await page.waitFor(5000)
+  const notificationsHTML = await page.$eval('._44_u > ul', e => e.outerHTML)
 
-  try {
-    //Wait for the post form
-    await page.waitFor('.32hm')
-  } catch (error) {
-    console.log("Failed to load notifications")
-    process.exit(0)
+  //Pass the notifications HTML to Cheerio selector
+  const $ = cheerio.load(notificationsHTML);
+  
+  const commentMentions = [] 
+  const birthdayWishes = []
+
+  $('ul').find('._33c').each((index, element) => {
+    const notification = $(element).attr('data-gt')
+
+    //Get the notifications that tag my name
+    if(notification.includes('comment_mention')){
+      const commentMentionLink = $(element).find('div > div > a').attr('href')
+      commentMentions.push(commentMentionLink)
+    }
+
+    //Get the rest of notifications
+    // else if(notification.includes(''))
+    // commentMentions.push(commentMention)
+  })
+
+  await page.waitFor(2000)
+
+  if(commentMentions.length) {
+    for(const commentMention of commentMentions) {
+      console.log(commentMention);
+      await page.goto(commentMention, {waitUntil:'networkidle2'})
+      await page.waitFor(2000)
+
+      // const tagger = await page.$eval('a[class =_6qw4]', element => element.text)
+      
+      await page.click('div[aria-label="Write a reply..."]');
+      await page.type('div[aria-label="Write a reply...', `Thanks for tagging~!👍😉`)
+      await page.keyboard.press('Enter')
+
+    }
   }
 
-  // //Type the post information
-  // await page.click('._1mf._1mj')
-  // await page.type("._1mf._1mj", postContent, { delay: 10 })
+  console.log("Those are objects for data types", commentMentions);
 
-  // //Click the submit form
-  // await page.waitFor(1000)
-  // await page.click('div[aria-label="Create a post"] button[type=submit]');
-
-
-  //if we close too soon, it might not finish the post sucessfully
-  // await new Promise(res => setTimeout(res, 2000));
-
-  console.log("I am working on notifications checking bro");
 }
 
 module.exports = makeBirthdayWishes

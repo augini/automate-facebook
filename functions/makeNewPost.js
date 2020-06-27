@@ -9,15 +9,15 @@ const newPost = async (page, postContent) => {
 
   try {
     //Wait for the post form
-    await page.waitFor('._1mf._1mj')
+    await page.waitFor('div[value = What\'s on your mind?]')
   } catch (error) {
     console.log("Failed to type")
     process.exit(0)
   }
 
-  //Type the post information
-  await page.click('._1mf._1mj')
-  await page.type("._1mf._1mj", postContent, { delay: 10 })
+  //Type the post information   
+  await page.click('div[value = What\'s on your mind?]')
+  await page.type("div[value= What\'s on your mind?]", postContent, { delay: 10 })
 
   //Click the submit form
   await page.waitFor(1000)

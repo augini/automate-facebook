@@ -7,7 +7,7 @@ const init = async () => {
   
   const page = await loginFacebook()
 
-  await newPost(page, 'I am just working on it.')
+  await newPost(page, 'Just testing.')
 
   await makeBirthdayWishes(page)
 

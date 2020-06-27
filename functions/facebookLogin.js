@@ -36,7 +36,6 @@ const loginFacebook =  async () => {
 
     //Wait for navigation to finish
     await page.waitForNavigation({ waitUntil: 'networkidle0' })
-    await page.waitFor(10000)
 
     //Check if logged in
     try {
